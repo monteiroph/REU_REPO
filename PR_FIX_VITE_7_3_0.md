@@ -17,3 +17,4 @@ Body:
 Labels sugeridas: `maintenance`, `security`, `dependencies`
 
 Reviewers sugeridos: respons√°vel pelo frontend ou CI.
+"Nota: verificaá∆o m°nima para criar PR" 
