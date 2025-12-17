@@ -27,7 +27,8 @@ jobs:
 
       - name: Install dependencies
         run: |
-          echo "Attempting npm ci..." >> tools/upgrade-check.log
+          set -euo pipefail
+          echo "Attempting npm ci..." > tools/upgrade-check.log
           if npm ci 2>&1 | tee -a tools/upgrade-check.log; then
             echo "npm ci succeeded" >> tools/upgrade-check.log
           else
