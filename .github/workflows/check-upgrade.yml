@@ -34,6 +34,9 @@ jobs:
             echo "npm ci failed, falling back to npm install" >> tools/upgrade-check.log
             npm install 2>&1 | tee -a tools/upgrade-check.log
           fi
+          echo "Listing node_modules/.bin and installed top-level packages" >> tools/upgrade-check.log
+          ls -la node_modules/.bin 2>&1 | tee -a tools/upgrade-check.log || true
+          npm list --depth=0 2>&1 | tee -a tools/upgrade-check.log || true
 
       - name: Generate lockfile
         run: npm run generate-lockfile
