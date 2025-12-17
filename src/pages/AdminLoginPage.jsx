@@ -23,11 +23,12 @@ const AdminLoginPage = () => {
     e.preventDefault();
     setLoading(true);
 
-    const result = login(formData.email, formData.password);
+    const result = await login(formData.email, formData.password);
 
     if (result.success) {
-      const user = JSON.parse(localStorage.getItem('user'));
-      if (user?.role === 'admin') {
+      const user = result.data?.user || result.data?.session?.user;
+      const isAdmin = user?.email === 'admin@minicars.com' || user?.role === 'admin';
+      if (isAdmin) {
         toast({
           title: "Acesso Administrativo Concedido",
           description: "Bem-vindo ao painel de controle.",

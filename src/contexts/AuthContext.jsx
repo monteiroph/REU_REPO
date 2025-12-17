@@ -52,42 +52,52 @@ export const AuthProvider = ({ children }) => {
   }, [handleSession]);
 
   const signUp = useCallback(async (email, password, name) => {
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: { name },
-      },
-    });
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { name },
+        },
+      });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      const message = error?.message || String(error);
       toast({
         variant: "destructive",
         title: "Erro no cadastro",
-        description: error.message,
+        description: message,
       });
-      return { error };
+      return { success: false, error: message };
     }
-
-    return { data, error: null };
   }, [toast]);
 
   const signIn = useCallback(async (email, password) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      const message = error?.message || String(error);
       toast({
         variant: "destructive",
         title: "Erro no login",
-        description: error.message,
+        description: message,
       });
-      return { error };
+      return { success: false, error: message };
     }
-
-    return { data, error: null };
   }, [toast]);
 
   const signOut = useCallback(async () => {
@@ -98,17 +108,35 @@ export const AuthProvider = ({ children }) => {
         title: "Erro ao sair",
         description: error.message,
       });
+      return { success: false, error: error.message };
     }
+    return { success: true };
   }, [toast]);
+
+  const register = useCallback(async (name, email, password) => {
+    return await signUp(email, password, name);
+  }, [signUp]);
+
+  const login = useCallback(async (email, password) => {
+    return await signIn(email, password);
+  }, [signIn]);
+
+  const logout = useCallback(async () => {
+    return await signOut();
+  }, [signOut]);
 
   const value = useMemo(() => ({
     user,
     session,
     loading,
+    // both the raw names and aliases for compatibility with pages
     signUp,
     signIn,
+    register,
+    login,
     signOut,
-  }), [user, session, loading, signUp, signIn, signOut]);
+    logout,
+  }), [user, session, loading, signUp, signIn, register, login, signOut, logout]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

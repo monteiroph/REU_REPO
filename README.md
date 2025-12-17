@@ -61,3 +61,20 @@ npm run dev
 ```
 
 Se ocorrerem erros, cole o log do terminal e envie para análise.
+
+## Verificação automática do checklist de upgrade
+
+Há um utilitário para executar todo o checklist de uma vez (Windows PowerShell):
+
+```powershell
+# a partir da raiz do projeto
+powershell -ExecutionPolicy Bypass -File .\tools\run-upgrade-checks.ps1
+```
+
+Ou use o script NPM:
+
+```powershell
+npm run check-upgrade
+```
+
+O log completo das execuções é gravado em `tools/upgrade-check.log`.
