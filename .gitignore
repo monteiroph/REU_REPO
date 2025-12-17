@@ -1,0 +1,6 @@
+node_modules/
+/.env
+/.env.local
+*.log
+upgrade-logs*.zip
+upgrade-logs*/
