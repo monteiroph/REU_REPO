@@ -1,0 +1,96 @@
+name: PR Upgrade Checks
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  unit-tests:
+    name: Run unit tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies for tests
+        run: |
+          set -euo pipefail
+          echo "Attempting npm ci for tests..." > tools/test.log
+          if npm ci 2>&1 | tee -a tools/test.log; then
+            echo "npm ci succeeded" >> tools/test.log
+          else
+            echo "npm ci failed, falling back to npm install" >> tools/test.log
+            npm install 2>&1 | tee -a tools/test.log
+          fi
+
+      - name: Run tests
+        run: npx vitest run --reporter verbose 2>&1 | tee -a tools/test.log
+
+      - name: Upload test logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-logs
+          path: tools/test.log
+
+  upgrade-checks:
+    name: Run upgrade checklist
+    needs: unit-tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Dump repo files for debugging
+        run: |
+          echo "Repository root listing:" > tools/upgrade-check.log
+          ls -la >> tools/upgrade-check.log
+
+      - name: Install dependencies
+        run: |
+          set -euo pipefail
+          echo "Attempting npm ci..." > tools/upgrade-check.log
+          if npm ci 2>&1 | tee -a tools/upgrade-check.log; then
+            echo "npm ci succeeded" >> tools/upgrade-check.log
+          else
+            echo "npm ci failed, falling back to npm install" >> tools/upgrade-check.log
+            npm install 2>&1 | tee -a tools/upgrade-check.log
+          fi
+          echo "Listing node_modules/.bin and installed top-level packages" >> tools/upgrade-check.log
+          ls -la node_modules/.bin 2>&1 | tee -a tools/upgrade-check.log || true
+          npm list --depth=0 2>&1 | tee -a tools/upgrade-check.log || true
+
+      - name: Generate lockfile
+        run: npm run generate-lockfile
+
+      - name: Run dependency audit
+        run: npm run check-deps
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload logs on failure
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: upgrade-logs
+          path: |
+            tools/upgrade-check.log
+            tools/dev-server.log
+            audit-summary.json
+            audit-fix.json
