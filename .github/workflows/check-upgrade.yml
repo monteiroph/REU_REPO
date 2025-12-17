@@ -20,8 +20,20 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
+      - name: Dump repo files for debugging
+        run: |
+          echo "Repository root listing:" > tools/upgrade-check.log
+          ls -la >> tools/upgrade-check.log
+
       - name: Install dependencies
-        run: npm ci
+        run: |
+          echo "Attempting npm ci..." >> tools/upgrade-check.log
+          if npm ci 2>&1 | tee -a tools/upgrade-check.log; then
+            echo "npm ci succeeded" >> tools/upgrade-check.log
+          else
+            echo "npm ci failed, falling back to npm install" >> tools/upgrade-check.log
+            npm install 2>&1 | tee -a tools/upgrade-check.log
+          fi
 
       - name: Generate lockfile
         run: npm run generate-lockfile
