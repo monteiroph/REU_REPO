@@ -1,0 +1,39 @@
+name: Notify on Upgrade Checks Completion
+
+on:
+  workflow_run:
+    workflows: ["PR Upgrade Checks"]
+    types: [completed]
+
+jobs:
+  notify:
+    name: Notify PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Comment on PRs for completed workflow
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const run = context.payload.workflow_run;
+            const conclusion = run.conclusion || 'unknown';
+            const url = run.html_url;
+            const name = run.name || 'PR Upgrade Checks';
+
+            if (!run.pull_requests || run.pull_requests.length === 0) {
+              core.info('No pull requests found for this workflow run; skipping comment.');
+              return;
+            }
+
+            for (const pr of run.pull_requests) {
+              const prNumber = pr.number;
+              const body = `🔔 CI finished for workflow **${name}** with conclusion: **${conclusion}**.\n\nRun details: ${url}\n\nIf the workflow failed, artifacts and logs may be attached to the run for debugging.`;
+
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body
+              });
+
+              core.info(`Commented on PR #${prNumber}`);
+            }
