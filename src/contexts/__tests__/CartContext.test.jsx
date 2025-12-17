@@ -4,9 +4,13 @@ import { describe, it, expect, vi } from 'vitest'
 import { CartProvider, useCart } from '../CartContext'
 import { AuthProvider } from '../AuthContext'
 
-// Mock supabase used by CartProvider
+// Mock supabase used by CartProvider (include auth used by AuthProvider)
 vi.mock('@/lib/customSupabaseClient', () => ({
   supabase: {
+    auth: {
+      getSession: vi.fn(() => Promise.resolve({ data: { session: null }, error: null })),
+      onAuthStateChange: vi.fn(() => ({ data: { subscription: { unsubscribe: vi.fn() } } })),
+    },
     from: () => ({
       select: () => ({ order: () => Promise.resolve({ data: [], error: null }) })
     }),
