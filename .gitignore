@@ -1,0 +1,25 @@
+# Node
+node_modules/
+.npm/
+.env
+.env.*
+.env.local
+dist/
+build/
+.vscode/
+.DS_Store
+npm-debug.log*
+coverage/
+.cache/
+.idea/
+.vscode/
+*.log
+
+# Vite
+dist/
+
+# OS
+Thumbs.db
+
+# Editor
+*.sublime-workspace

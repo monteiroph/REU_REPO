@@ -61,3 +61,7 @@ npm run dev
 ```
 
 Se ocorrerem erros, cole o log do terminal e envie para análise.
+
+## Licença
+
+Este projeto é licenciado sob a Licença **MIT** — veja o arquivo `LICENSE` para mais detalhes.
